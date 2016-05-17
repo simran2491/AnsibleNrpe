@@ -48,6 +48,7 @@
 
    - name: Configuring IPTABLES
      iptables: chain=INPUT protocol=tcp to_ports=5666 jump=ACCEPT state=present
+     when: ansible_os_family == 'RedHat'
 
    - name: Enable Xinetd Service
      service: name=xinetd state=restarted enabled=yes
