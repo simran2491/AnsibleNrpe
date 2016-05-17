@@ -1,0 +1,56 @@
+---
+- hosts: webservers
+  remote_user: root
+  tasks:
+   - name: Install yum packages
+     yum: name={{item}} state=installed
+     with_items:
+         - libselinux-python
+         - glibc
+         - glibc-common
+         - xinetd
+         - gcc
+     when: ansible_os_family == 'RedHat'
+
+
+   - name: Install apt Packages
+     apt: name={{item}} state=installed
+     with_items:
+         - glibc
+         - glibc-common
+         - xinetd
+         - gcc
+     when: ansible_os_family == 'Debian'
+
+
+   - name: Copy NRPE Package
+     copy: src=nagios/nrpe-2.8.tar.gz dest=/tmp/ mode=0755
+
+
+   - name: Copy Nagios-Plugiibs Package
+     copy: src=nagios/nagios-plugins-2.1.1.tar.gz dest=/tmp/ mode=0755
+   
+   - name: Deflating NRPE Packages
+     shell: tar -xvf nrpe-2.8.tar.gz chdir=/tmp
+
+   - name: Deflating Nagios-Plugins Packages
+     shell: tar -xvf nagios-plugins-2.1.1.tar.gz chdir=/tmp
+   
+
+   - name: Creating Nagios User
+     user: name=nagios shell=/sbin/nologin createhome=no state=present
+
+   - name: Configuring and installing  Nagios-Plugins
+     shell: ./configure && make && make install chdir=/tmp/nagios-plugins-2.1.1/
+
+   - name: Configuring and installing  NRPE
+     shell: ./configure && make all && make install-plugin && make install-daemon && make install-daemon-config && make install-xinetd chdir=/tmp/nrpe-2.8/
+
+#   - name: Configuring IPTABLES
+#     iptables: chain=INPUT protocol=tcp to_ports=5666 jump=ACCEPT state=present
+
+   - name: Enable Xinetd Service
+     service: name=xinetd state=restarted enabled=yes
+
+   - name: Configure Services to enable port 5666
+     lineinfile: dest=/etc/services backup=yes line="nrpe            5666/tcp" state=present
