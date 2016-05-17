@@ -46,8 +46,8 @@
    - name: Configuring and installing  NRPE
      shell: ./configure && make all && make install-plugin && make install-daemon && make install-daemon-config && make install-xinetd chdir=/tmp/nrpe-2.8/
 
-#   - name: Configuring IPTABLES
-#     iptables: chain=INPUT protocol=tcp to_ports=5666 jump=ACCEPT state=present
+   - name: Configuring IPTABLES
+     iptables: chain=INPUT protocol=tcp to_ports=5666 jump=ACCEPT state=present
 
    - name: Enable Xinetd Service
      service: name=xinetd state=restarted enabled=yes
